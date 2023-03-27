@@ -1,0 +1,69 @@
+<mujoco>
+  <extension>
+    <required plugin="mujoco.elasticity.cable"/>
+  </extension>
+  <option timestep="0.0005" jacobian="sparse"/>
+  
+  <visual>
+    <global elevation="-30"/>
+  </visual>
+  <asset>
+    <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2"
+      width="512" height="512" mark="cross" markrgb=".8 .8 .8"/>
+    <material name="matplane" reflectance="0.3" texture="texplane" texrepeat="1 1" texuniform="true"/>
+  </asset>
+
+  <worldbody>
+    
+    <body>
+      <body name="object"> 
+        <body name="maze" pos="0 0 0" >
+          <light directional="true" diffuse=".6 .6 .6" specular="0.2 0.2 0.2" pos="0 0 4" dir="0 0 -1"/>
+          <geom name="ground" type="plane" size="0 0 1" pos="0 0 0" quat="1 0 0 0" material="matplane" condim="1"/>
+          <geom type="box" size=".03 0.1575 0.05" pos="-0.0375 0.41875 0"  group="0" condim="4"/>
+          <geom type="box" size="0.25 0.0125 0.05" pos="-0.25 0.1375 0"  group="0" condim="4"/>
+          <geom type="box" size="0.25 0.025 0.05" pos="-0.25 0.6 0"  group="0" condim="4"/>
+          <geom type="box" size=".01875 0.1 0.05" pos="-0.25 0.225 0"  group="0" condim="4"/>
+          <geom type="box" size=".01875 0.1625 0.05" pos="-0.15 0.45 0"  group="0" condim="4"/>
+          <geom type="box" size=".01875 0.15 0.05" pos="-0.35 0.3375 0"  group="0" condim="4"/>
+          <geom type="box" size=".0225 0.0375 0.05" pos="-0.475 0.5375 0" group="0" condim="4"/>
+          <geom type="box" size=".0225 0.15 0.05" pos="-0.475 0.28875 0"  group="0" condim="4"/>
+          <geom type="box" size="0.0625 0.0125 0.05" pos="-0.2125 0.475 0" group="0" condim="4"/>
+
+        </body>     
+      </body>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.045" name="bottom_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0.03" name="top_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0.03 0.03 0" name="horizontal_radius_site"/>
+    </body>
+    <!--Cable-->
+    <composite type="cable" curve="s" count="51 1 1" size="0.8" offset="-0.05 0.2 .02" initial="none">
+      <plugin plugin="mujoco.elasticity.cable">
+        <config key="twist" value="1e3"/>
+        <config key="bend" value="1e2"/>
+      </plugin>
+      <joint kind="main" damping=".001"/>
+      <geom type="capsule" size=".005" rgba=".8 .2 .1 1" friction="1" condim="3"/>
+    </composite>   
+    <!--Adapter adhesive to socket-->
+    <body name="adapter" pos="0.76 0.2 .02">
+      <geom name="adapter" size=".008" conaffinity="2"/>
+      <freejoint/>
+    </body>
+    <!--Adhesive socket-->
+    <body name="socket" pos="-.6 0.5 0.05">
+      <geom type="box" size=".05 .07 .05" margin=".02" gap=".01" rgba=".1 .8 .2 1" contype="2" conaffinity="2"/>
+    </body>
+  </worldbody> 
+  <equality>
+    <connect name="right_boundary" body1="B_last" body2="adapter" anchor=".02625 0 0"/>
+  </equality>
+  <contact>
+    <exclude body1="B_last" body2="adapter"/>
+  </contact>
+  <!--Making socket adhesive-->
+  <actuator>
+    <adhesion name="adhere_socket" body="socket" ctrlrange="0 10" gain="10"/>
+  </actuator>
+  
+</mujoco>
